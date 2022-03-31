@@ -105,13 +105,13 @@
 
 ## 2. 案例
 ### 2.1 创建新仓库
-
+```
 git init 
 git remote add 仓库名 url
 git add .
 git commit -m "first commit"
 git push -u 仓库名 分支名
-
+```
 ### 2.2 案例：多个git账号管理
 https://blog.csdn.net/u010250240/article/details/101627640
 
@@ -148,10 +148,10 @@ IdentityFile ~/.ssh/gitlab_id_rsa
 #### 2. git 设置
 打开Git Bash\
 1、清除 git 的全局设置（新安装git可以跳过）\
-
+```
 git  config --global --unset user.name 
 git  config  --global --unset user.email 
-
+```
 2、为每一个账号都生成一对秘钥（私钥和公钥）\
 为账号 a 生成秘钥(上面config里的邮箱)：
 
