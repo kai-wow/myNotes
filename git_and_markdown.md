@@ -164,12 +164,16 @@ ssh-keygen -t rsa -C "邮箱"
 4、最后是测试\
 ssh -T git@对应的服务器地址 （即config里填的Host后面的内容）\
 **若一个网站上有多个账号，则host后很可能不是地址**
-eg.如果你是Host host_name，那么测试的时候就这样：ssh -T git@host_name。
+eg.如果你是Host host_name，那么测试的时候就这样：ssh -T git@host_name
 
 5、在不同git 账户下新增仓库\
 **eg.如果你是Host host_name，那么：**\
 git remote add 远程主机名 git@host_name:用户名/仓库名.git
 
+#### 3. 新建仓库
+git remote add 远程仓库名 git@host_name:<>/<>.git
+> 正常情况下是 git remote add origin git@github.com:<>/<>.git 
+> 这是因为默认 host_name 是 网址，但若同一 git 平台下有多个账号，则需要区分，重新命名
 
 
 ## 3. 常见报错
