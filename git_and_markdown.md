@@ -54,16 +54,27 @@
 - 重命名远程仓库名\
     git remote rename origin destination
 
-#### 1.3.3 远程 与 本地的交互
-- 拉取远程仓库\
-    git pull <origin master>
+#### 1.3.3 拉取远程分支
+- 克隆项目（完全克隆，包括远程仓库的版本变化）\
+    git clone url\
+    或 git clone url [本地路径（为新建文件夹/空文件夹）]
 
-- 拉取远程仓库的某个分支，并与本地某分支合并：\
-    git pull <远程主机名> <远程分支名>:<本地分支名>
+- 拉取远程分支最新版本，即 FETCH_HEAD
+    git fetch origin master  \
+    git fetch origin master:temp
 
-- 克隆项目\
-    git clone url
-    或 git clone url 本地路径（为新建文件夹/空文件夹）
+- 拉取远程仓库，并与本地某分支合并，即：git pull = git fetch + git merge(**可实现多台电脑同一账户的本地仓库更新**)\
+    git pull <origin master>\
+    git pull <远程主机名> [远程分支名]:[本地分支名]
+
+  
+**三者区别**：
+1. 是否需要本地初始化仓库\
+git clone 不需要，git pull 和 git fetch 需要。
+
+2. 是否可以指定分支推送到远程\
+git clone下来的项目可以直接推送到远程，git pull 和 git fetch 需要先执行 git remote add 添加远程仓库后才能 push。
+
 
 ### 1.4	分支
 - 新建分支\
@@ -112,7 +123,7 @@ git add .
 git commit -m "first commit"
 git push -u 仓库名 分支名
 ```
-### 2.2 案例：多个git账号管理
+### 2.2 案例：多个git账号SSH管理
 https://blog.csdn.net/u010250240/article/details/101627640
 
 #### 1. 配备 config 文件
@@ -170,6 +181,33 @@ eg.如果你是Host host_name，那么测试的时候就这样：ssh -T git@host
 **eg.如果你是Host host_name，那么：**\
 git remote add 远程主机名 git@host_name:用户名/仓库名.git
 
+### 2.3 案例：一个git账户多设备同步
+假设有设备 A 和 B。\
+首先在设备 A 上创建了项目并推送远程。\
+ ```
+ git init
+ git remote add 仓库名 url
+ git add .
+ git commit -m ""
+ git push -u 仓库名 main
+ ```
+此时要在设备 B 上从无到有获取这个项目
+ ```
+ git clone url [本地目录]
+ ```
+在设备 B 上对该仓库做了更改后，同步到远程仓库
+ ```
+ git add .
+ git commit -m ""
+ git push -u 仓库名 main
+ ```
+第二天，要在设备 A 上拉去远程仓库并合并到本地仓库上
+ ```
+ git pull 仓库名 main
+ ```
+在设备 A 上对该仓库做了更改后，同步到远程仓库（代码同 B）
+
+
 #### 3. 新建仓库
 git remote add 远程仓库名 git@host_name:<>/<>.git
 > 正常情况下是 git remote add origin git@github.com:<>/<>.git 
@@ -221,13 +259,14 @@ https://daringfireball.net/projects/markdown/syntax
 ## 1.格式
 ### 1.1	标题
 在文本前面加上 # 即可，总共六级标题，标题字号相应降低。
+```
 # 一级标题
 ## 二级标题
 ### 三级标题
 #### 四级标题
 ##### 五级标题
 ###### 六级标题 
-
+```
 ### 1.2	列表格式
 无序列表
 在文字前加上 - 或 * 或 + 即可
