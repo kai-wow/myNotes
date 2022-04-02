@@ -19,12 +19,12 @@
 
 示例 1：
 
-输入：n = 9
-输出：6
-解释：
-arr = [1, ~~2~~, 3, ~~4~~, 5, ~~6~~, 7, ~~8~~, 9]
-arr = [2, ~~4~~, 6, ~~8~~]
-arr = [~~2~~, 6]
+输入：n = 9\
+输出：6\
+解释：\
+arr = [1, ~~2~~, 3, ~~4~~, 5, ~~6~~, 7, ~~8~~, 9]\
+arr = [2, ~~4~~, 6, ~~8~~]\
+arr = [~~2~~, 6]\
 arr = [6]
 
 提示： 1 <= n <= 10e9
@@ -33,7 +33,7 @@ arr = [6]
 1. 因为测试用例输入可大至 10e9，所以挨个循环delete是不可行的，得找规律/做数学题。
 
 (1) **找规律**\
-***思路***：每个回合更新和记录head变量，当数组的总数变为1时，head就是输出的数
+***思路***：每个回合更新和记录head变量，当数组的长度变为1时，head就是输出的数
 
 例如：\
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24\
@@ -60,23 +60,6 @@ arr = [6]
 
 **因此可得到代码逻辑**\
 ```python
-# 我修改后的代码
-class Solution:
-    def lastRemaining(self, n: int) -> int:
-        self.head = 1
-        self.len = n
-        self.left = True
-        self.step = 0
-        round = 0
-        while self.len > 1:
-            if self.len % 2 == 1 or (self.len % 2 == 0 and self.left):
-                self.step = 2 ** round
-                self.head += self.step
-
-            self.len = self.len // 2
-            self.left = not self.left
-            round += 1
-        return self.head
 # 优秀代码
 class Solution:
     def lastRemaining(self, n: int) -> int:
@@ -94,9 +77,27 @@ class Solution:
             left = not left #取反移除方向
 
         return head
+
+# 我修改后的代码
+class Solution:
+    def lastRemaining(self, n: int) -> int:
+        head = 1
+        len = n
+        left = True
+        step = 0
+        round = 0
+        while len > 1:
+            if len % 2 == 1 or (len % 2 == 0 and left):
+                step = 2 ** round
+                head += step
+
+            len = len // 2
+            left = not left
+            round += 1
+        return head
 ```
 
-1. 如何正确按照loc删除元素（删除元素后，列表长度会变化）？
+2. 如何正确按照loc删除元素（删除元素后，列表长度会变化）？
 ```python
 def elim_left2right(self):
     i = 0
@@ -137,7 +138,7 @@ def elim_right2left(self):
 
 ![接雨水leetcode实例图](https://assets.leetcode-cn.com/solution-static/42/1.png)
 
-- 如何更新leftMax 和 rightMax
+- 如何更新leftMax 和 rightMax\
 显然，leftMax[0]=height[0]，rightMax[n−1]=height[n−1]
 
 当 1≤i≤n−1 时，leftMax[i]=max⁡(leftMax[i−1],height[i])
@@ -187,8 +188,8 @@ class Solution:
 
 ```
 - 复杂度分析
-    时间复杂度：O(n)。
-    空间复杂度：O(n)。需要创建两个长度为 n 的数组 leftMax 和 rightMax。
+    时间复杂度：O(n)。\
+    空间复杂度：O(n)。\
 
 
 #### 解法 2  单调栈
@@ -204,8 +205,7 @@ class Solution:
 在对下标 i 处计算能接的雨水量之后，将 i 入栈，继续遍历后面的下标，计算能接的雨水量。遍历结束之后即可得到能接的雨水总量。
 
 - 复杂度分析\
-    时间复杂度：O(n)
-
+    时间复杂度：O(n)\
     空间复杂度：O(n)
 
 #### 解法 3 双指针
@@ -251,6 +251,10 @@ class Solution:
                 right -= 1
         return ans
 ```
+- 复杂度分析\
+    时间复杂度：O(n)\
+    空间复杂度：O(1)
+
 ## 11 盛最多水的容器
 ### 1. 题目
 给定一个长度为 n 的整数数组 height 。有 n 条垂线，第 i 条线的两个端点是 (i, 0) 和 (i, height[i]) 。
@@ -413,6 +417,10 @@ class Solution:
 
 可以发现，替换中断点后，右边的新的子序列依旧为降序，要将降序序列更改为升序序列，可以使用**双指针**法反转该子序列。
 而无需遍历一次进行排序。
+
+- 复杂度分析：\
+时间复杂度：O(N)\
+空间复杂度：O(1)
 
 ```python
 # 优秀答案
