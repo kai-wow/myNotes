@@ -5,6 +5,7 @@
 | 双指针法  |  2   | 11, 31, 42 |
 | 单调栈   |  1   |         42 |
 | 动态规划  |  1   |         42 |
+|确定有限状态机|  1   |         8 |
 
 # 刷题中
 ## 390 消除游戏
@@ -467,6 +468,174 @@ class Solution:
             left += 1
             right -= 1
 ```
+## 8 字符串转换整数 (atoi)
+### 1. 题目
+请你来实现一个 myAtoi(string s) 函数，使其能将字符串转换成一个 32 位有符号整数（类似 C/C++ 中的 atoi 函数）。
+
+函数 myAtoi(string s) 的算法如下：
+
+    读入字符串并丢弃无用的前导空格\
+    检查下一个字符（假设还未到字符末尾）为正还是负号，读取该字符（如果有）。 确定最终结果是负数还是正数。 如果两者都不存在，则假定结果为正。\
+    读入下一个字符，直到到达下一个非数字字符或到达输入的结尾。字符串的其余部分将被忽略。\
+    将前面步骤读入的这些数字转换为整数（即，"123" -> 123， "0032" -> 32）。如果没有读入数字，则整数为 0 。必要时更改符号（从步骤 2 开始）。\
+    如果整数数超过 32 位有符号整数范围 [−231,  231 − 1] ，需要截断这个整数，使其保持在这个范围内。具体来说，小于 −231 的整数应该被固定为 −231 ，大于 231 − 1 的整数应该被固定为 231 − 1 。\
+    返回整数作为最终结果。\
+
+注意：\
+    本题中的空白字符只包括空格字符 ' ' 。\
+    除前导空格或数字后的其余字符串外，请勿忽略 任何其他字符。\
+
+
+示例 1：\
+```
+输入：s = "42"
+输出：42
+解释：加粗的字符串为已经读入的字符，插入符号是当前读取的字符。
+第 1 步："42"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："42"（当前没有读入字符，因为这里不存在 '-' 或者 '+'）
+         ^
+第 3 步："42"（读入 "42"）
+           ^
+解析得到整数 42 。
+由于 "42" 在范围 [-2^31, 2^31 - 1] 内，最终结果为 42 。
+```
+示例 2：
+```
+输入：s = "   -42"
+输出：-42
+解释：
+第 1 步："   -42"（读入前导空格，但忽视掉）
+            ^
+第 2 步："   -42"（读入 '-' 字符，所以结果应该是负数）
+             ^
+第 3 步："   -42"（读入 "42"）
+               ^
+解析得到整数 -42 。
+由于 "-42" 在范围 [-2^31, 2^31 - 1] 内，最终结果为 -42 。
+```
+示例 3：
+```
+输入：s = "4193 with words"
+输出：4193
+解释：
+第 1 步："4193 with words"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："4193 with words"（当前没有读入字符，因为这里不存在 '-' 或者 '+'）
+         ^
+第 3 步："4193 with words"（读入 "4193"；由于下一个字符不是一个数字，所以读入停止）
+             ^
+解析得到整数 4193 。
+由于 "4193" 在范围 [-2^31, 2^31 - 1] 内，最终结果为 4193 。
+```
+提示：\
+    0 <= s.length <= 200\
+    s 由英文字母（大写和小写）、数字（0-9）、' '、'+'、'-' 和 '.' 组成\
+
+### 2. 考点与优秀答案
+#### 考点
+溢出（主要考核 c 和 c++ 中的 int 溢出问题
+
+#### 优秀答案
+##### 自动机/确定有限状态机（deterministic finite automaton, DFA）
+字符串处理往往涉及复杂的流程，如果直接if else，容易写出极其臃肿的代码。
+
+因此，为了有条理地分析每个输入字符的处理方法，我们可以使用**自动机**这个概念。**DFA方法的普遍性和可维护性很高**。
+
+!["自动机状态转移图"](https://assets.leetcode-cn.com/solution-static/8/fig1.png)
+
+我们的程序在每个时刻有一个状态 s，每次从序列中输入一个字符 c，并根据字符 c 转移到下一个状态 s'。根据状态转移规则制定如下表格。
+> 下表类似状态转移矩阵，第一列/index 为当前状态(s)，第一行/col (c)为输入的字符，表格内部为 下一个状态(s')。注意需要枚举，覆盖所有情况。
+
+|          | ' '    |   +/-|   number|  other |
+|-------   |:----:  |:----:|   :----:|-------:|
+| start    |  start |signed| in_number| end |
+| signed   |  end   |  end | in_number| end |
+| in_number|  end   |  end | in_number| end |
+| end      |  end   |  end | end      | end |
+
+另外自动机也需要记录当前已经输入的数字，只要在 s' 为 in_number 时，更新我们输入的数字，即可最终得到输入的数字。
+
+```python
+INT_MAX = 2 ** 31 - 1
+INT_MIN = -2 ** 31
+
+class Automaton:
+    def __init__(self):
+        self.state = 'start'
+        self.sign = 1
+        self.ans = 0
+        self.table = {
+            'start': ['start', 'signed', 'in_number', 'end'],
+            'signed': ['end', 'end', 'in_number', 'end'],
+            'in_number': ['end', 'end', 'in_number', 'end'],
+            'end': ['end', 'end', 'end', 'end'],
+        }
+        
+    def get_col(self, c): # 判断输入为 c 时对应 self.table 的第几列
+        if c.isspace():
+            return 0
+        if c == '+' or c == '-':
+            return 1
+        if c.isdigit():
+            return 2
+        return 3
+
+    def get(self, c):
+        self.state = self.table[self.state][self.get_col(c)]  # 获取输入为 c 时的 下一状态
+        if self.state == 'in_number':
+            self.ans = self.ans * 10 + int(c)
+            self.ans = min(self.ans, INT_MAX) if self.sign == 1 else min(self.ans, -INT_MIN)
+        elif self.state == 'signed':
+            self.sign = 1 if c == '+' else -1
+
+class Solution:
+    def myAtoi(self, str: str) -> int:
+        automaton = Automaton()
+        for c in str:
+            automaton.get(c)
+        return automaton.sign * automaton.ans
+
+```
+
+
+##### python 正则（但违背出题本意）
+```python
+class Solution:
+    def myAtoi(self, s: str) -> int:
+        return max(min(int(*re.findall('^[\+\-]?\d+', s.lstrip())), 2**31 - 1), -2**31)
+```
+
+以上语句拆开：
+
+```python
+import re
+class Solution:
+    def myAtoi(self, s: str) -> int:
+        INT_MAX = 2**31 - 1    
+        INT_MIN = -2**31
+        s = s.lstrip()      # 清除左边多余的空格
+        num_re = re.compile(r'^[\+\-]?\d+')   # 设置正则规则
+        num = num_re.findall(s)   #查找匹配的内容，返回的是列表
+        num = int(*num)   # 用*对列表解包并且转换成整数（int不支持列表）
+        return max(min(num,INT_MAX),INT_MIN)    # 返回值
+```
+- 使用正则表达式
+  - ^：匹配字符串开头，
+  - []: 表示匹配括号内的任一字符
+  - [\+\-]：表示匹配一个+字符或-字符，
+  - ?：表示前面一个字符可有可无，
+  - \d：表示一个数字，0-9的范围，
+  - +：表示前面一个字符出现一次或多次，
+  - \D：一个非数字字符
+  - *：解包操作，如 *[1,2,3] 会输出 1 2 3
+- max(min(数字, 2**31 - 1), -2**31) 用来防止结果越界
+
+## ？
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案
 
 ## ？
 ### 1. 题目
