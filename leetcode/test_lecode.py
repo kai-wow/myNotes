@@ -89,6 +89,25 @@ class Solution:
                 ans = -2**31
         return ans
 
-s = "words and 987"
-a = Solution().myAtoi(s)
+# s = "words and 987"
+# a = Solution().myAtoi(s)
+# print(a)
+
+class Solution:
+    def longestValidParentheses(self, s: str) -> int:
+        ans = 0
+        if len(s)==0:
+            return ans
+        pre = s[0]
+        for i in range(1, len(s)):
+            # print(s[i])
+            print(pre, s[i])
+            if pre == '(' and s[i] ==")":
+                ans += 1
+            pre = s[i]
+        return ans*2
+
+s = "()(())"
+
+a = Solution().longestValidParentheses(s)
 print(a)
