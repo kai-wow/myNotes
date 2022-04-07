@@ -7,6 +7,7 @@
 | 栈          |  1   |      20, 32|
 | 动态规划    |  3   |  22, 32, 42 |
 |确定有限状态机|  1   |         8 |
+|哈希表       |  1   |       3, 20 |
 
 # 常见题型
 ## 括号题
@@ -15,7 +16,12 @@
 | 20 有效的括号  | 栈             |
 | 22 括号生成    | 1.动态规划<br/>2.递归法   | 
 | 32 最长有效括号| 1.动态规划<br/>2.栈 <br/>3.双指针+正向逆向结合|
-
+## 子字符
+| 题号           | 方法           |
+|  -------      |:---------------|
+| 3 无重复字符的最长子串  | 哈希表             |
+|      | 1. <br/>2.    | 
+|      | 1. <br/>2.   |
 
 # Python刷题中
 ## 390 消除游戏
@@ -711,8 +717,6 @@ class Solution:
             return dic[l] == r
         return False
 ```
-
-
 ## 22 括号生成 TODO 没做完
 ### 1. 题目
 数字 n 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 有效的 括号组合。
@@ -741,7 +745,6 @@ class Solution:
                 res.add(i[0:j] + '()' + i[j:])
         return list(res)
 ```
-
 ## 32 最长有效括号 TODO 没做完
 ### 1. 题目
 给你一个只包含 '(' 和 ')' 的字符串，找出最长有效（格式正确且连续）括号子串的长度。
@@ -767,6 +770,65 @@ class Solution:
 ##### 方法二：栈
 
 ##### 方法三：双指针+正向逆向结合
+## 3 无重复字符的最长子串
+### 1. 题目
+给定一个字符串 s ，请你找出其中不含有重复字符的 最长子串 的长度。
+
+示例 1:\
+输入: s = "abcabcbb"\
+输出: 3 
+
+示例 2:
+输入: s = "pwwkew"\
+输出: 3
+
+
+
+
+### 2. 考点与优秀答案
+#### 考点
+哈希表
+#### 优秀答案
+##### 字典（ 哈希表 ）
+用字典（哈希表）储存某字符上一次出现的index，则可以只循环一次。
+
+复杂度分析:
+    - 时间复杂度：O(N)
+    - 空间复杂度：$O(|\Sigma|)$，其中 $\Sigma$ 表示字符集（即字符串中可以出现的字符），$|\Sigma|$表示字符集的大小。在本题中没有明确说明字符集，因此可以默认为所有 ASCII 码在 [0, 128) 内的字符，即 $|\Sigma|$ = 128。
+
+```python
+class Solution:
+    def lengthOfLongestSubstring(self, s):
+        st = {}
+        i, ans = 0, 0
+        for j in range(len(s)):
+            if s[j] in st:
+                i = max(st[s[j]], i)
+            ans = max(ans, j - i + 1)
+            st[s[j]] = j + 1
+        return ans
+
+# 我的答案，两次循环
+class Solution:
+    def lengthOfLongestSubstring(self, s: str):
+        if len(s) <= 1:
+            return len(s)
+        left = 0
+        ans = 1
+        
+        for right in range(1, len(s)):
+            repeat = False
+            for j in range(right-1, left-1, -1):
+                if s[right] == s[j]:
+                    repeat = True
+                    break
+            if repeat:
+                left = j + 1
+            ans = max(ans, right - left + 1)
+        return ans
+
+```
+
 
 ## ？
 ### 1. 题目
