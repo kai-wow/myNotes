@@ -107,7 +107,22 @@ class Solution:
             pre = s[i]
         return ans*2
 
-s = "()(())"
 
-a = Solution().longestValidParentheses(s)
+class Solution:
+    def longestCommonPrefix(self, strs) -> str:
+        prefix = ""
+        minlen = min([len(s) for s in strs])
+        for i in range(minlen+1):
+            prefix = strs[0][:i]
+            print(prefix)
+            for s in strs[1:]:
+                if s[:i] != prefix:
+                    return prefix[:-1]
+        return prefix
+
+s = ['ab']#["flower","flower","flower","flower"]# ["ab", "a"]#["flower","flow","flight"]
+# 
+# 
+
+a = Solution().longestCommonPrefix(s)
 print(a)

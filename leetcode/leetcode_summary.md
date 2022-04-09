@@ -22,7 +22,12 @@
 | 3 无重复字符的最长子串  | 哈希表             |
 |      | 1. <br/>2.    | 
 |      | 1. <br/>2.   |
-
+# 易错点
+## 迭代的终止条件
+### for range 迭代
+1. 若要循环n次，则为`for i in range(n)`
+2. 若要取 i = 1 ~ n  , 则为 `for i in range(1, n+1)`
+> 一定要分清需要的是哪种迭代！
 # Python刷题中
 ## 390 消除游戏
 ### 1. 题目
@@ -826,9 +831,135 @@ class Solution:
                 left = j + 1
             ans = max(ans, right - left + 1)
         return ans
-
 ```
+## 5 最长回文子串 TODO 没做完
+### 1. 题目
+给你一个字符串 s，找到 s 中最长的回文子串。
+ 
+示例 1：\
+输入：s = "babad"\
+输出："bab"
 
+示例 2：\
+输入：s = "cbbd"\
+输出："bb"
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案
+##### 方法三：Manacher 算法
+
+还有一个复杂度为 O(n) 的 Manacher 算法。然而本算法十分复杂，一般不作为面试内容。这里给出，仅供有兴趣的同学挑战自己。
+
+为了表述方便，我们定义一个新概念臂长，表示中心扩展算法向外扩展的长度。如果一个位置的最大回文字符串长度为 2 * length + 1 ，其臂长为 length。
+
+下面的讨论只涉及长度为奇数的回文字符串。长度为偶数的回文字符串我们将会在最后与长度为奇数的情况统一起来。
+
+思路与算法
+
+在中心扩展算法的过程中，我们能够得出每个位置的臂长。那么当我们要得出以下一个位置 i 的臂长时，能不能利用之前得到的信息呢？
+
+答案是肯定的。具体来说，如果位置 j 的臂长为 length，并且有 j + length > i，如下图所示：
+## 14 最长公共前缀
+### 1. 题目
+编写一个函数来查找字符串数组中的最长公共前缀。\
+如果不存在公共前缀，返回空字符串 ""。
+
+示例 1：\
+输入：strs = ["flower","flow","flight"]\
+输出："fl"
+### 2. 考点与优秀答案
+#### 考点
+基本都得循环两次（不要怕循环次数多，写出来是第一位）
+#### 优秀答案
+##### 方法一：横向扫描
+逐个字符串地扫描，先找出前两个字符串的共同前缀，再找出前三个的，以此类推。
+```python
+class Solution:
+    def longestCommonPrefix(self, strs: List[str]) -> str:
+        if not strs:
+            return ""
+        
+        prefix, count = strs[0], len(strs)
+        for i in range(1, count):
+            prefix = self.lcp(prefix, strs[i])
+            if not prefix:
+                break
+
+        return prefix
+
+    def lcp(self, str1, str2):  # 找两个字符串的 最长公共前缀
+        length, index = min(len(str1), len(str2)), 0
+        while index < length and str1[index] == str2[index]:
+            index += 1
+        return str1[:index]
+```
+##### 方法二：纵向扫描
+对所有字符串，逐个index地扫描
+```python
+class Solution:
+    def longestCommonPrefix(self, strs: List[str]) -> str:
+        if not strs:
+            return ""
+        
+        length, count = len(strs[0]), len(strs)
+        for i in range(length):
+            c = strs[0][i]
+            if any(i == len(strs[j]) or strs[j][i] != c for j in range(1, count)):
+                return strs[0][:i]
+        
+        return strs[0]
+
+# 我的代码
+class Solution:
+    def longestCommonPrefix(self, strs) -> str:
+        prefix = ""
+        minlen = min([len(s) for s in strs])
+        for i in range(minlen+1):
+            prefix = strs[0][:i]
+            print(prefix)
+            for s in strs[1:]:
+                if s[:i] != prefix:
+                    return prefix[:-1]
+        return prefix
+```
+##### 方法三：分治
+最长公共前缀的性质。若把字符列表分为 1，2两个部分，则总体的最长公共前缀一定是 1 和 2 的公共前缀
+
+##### 方法四：二分查找
+最长公共前缀的长度不会超过字符串数组中的最短字符串的长度。可以在 [0,minLength] 的范围内通过二分查找得到最长公共前缀的长度。
+
+##### 特殊解法：python特性
+```python
+# 1. zip 函数 逐个比较每个字符的字母
+class Solution:
+    def longestCommonPrefix(self, strs):
+        """
+        :type strs: List[str]
+        :rtype: str
+        """
+        res = ""
+        for tmp in zip(*strs):  # 取每个单词同一位置的字母，看是否相同
+            tmp_set = set(tmp)
+            if len(tmp_set) == 1:
+                res += tmp[0]
+            else:
+                break
+        return res
+# 2. 排序 字符串可以按ascII值排序，eg.abb, aba, abac，最大为abb，最小为aba
+def longestCommonPrefix(self, strs):
+        if not strs: return ""
+        s1 = min(strs)
+        s2 = max(strs)
+        for i,x in enumerate(s1):
+            if x != s2[i]:
+                return s2[:i]
+        return s1
+```
+## ？
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案
 
 ## ？
 ### 1. 题目
