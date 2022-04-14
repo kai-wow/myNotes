@@ -120,6 +120,9 @@ git clone下来的项目可以直接推送到远程，git pull 和 git fetch 需
 git init 
 git remote add 仓库名 url
 git add .
+# 如果有多个 github账号，可能需要先设置
+    git config --global user.email 221040010@link.cuhk.edu.cn  "you@example.com"
+    git config --global user.name algo21-221040010  "Your Name"
 git commit -m "first commit"
 git push -u 仓库名 分支名
 ```

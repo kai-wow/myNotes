@@ -124,5 +124,28 @@ s = ['ab']#["flower","flower","flower","flower"]# ["ab", "a"]#["flower","flow","
 # 
 # 
 
-a = Solution().longestCommonPrefix(s)
+
+
+class Solution:
+    def letterCombinations(self, digits: str):
+        num_abc = {'2':'abc', '3':'def', '4':'ghi', '5':'jkl', 
+                   '6':'mno', '7':'pqrs', '8':'tuv', '9':'wxyz'}
+
+        ans = []
+        if len(digits)==0:
+            return ans
+        if len(digits)==1:
+            return list(num_abc[digits])
+        
+        # while len(digits)>1:
+        first = digits[0]
+        digits = digits[1:]
+        a = self.letterCombinations(digits)
+        for i in num_abc[first]:
+            ans += [i+j for j in a]
+            print(ans)
+        return ans
+
+s = '234'
+a = Solution().letterCombinations(s)
 print(a)
