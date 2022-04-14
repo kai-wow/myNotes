@@ -146,6 +146,10 @@ class Solution:
             print(ans)
         return ans
 
-s = '234'
-a = Solution().letterCombinations(s)
-print(a)
+k = 3
+nums = [1,2,3,4,5,6,7]
+l = len(nums)
+k = k % l
+c = nums.copy()
+nums = c[-k:] + c[:l-k]
+print(nums)
