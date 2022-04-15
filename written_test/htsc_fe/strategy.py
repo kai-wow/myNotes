@@ -21,18 +21,18 @@ def load_data(path='国内股债收盘价.xlsx'):
     return dates, data_dict
 
 
-def get_trading_signal(date, opinions):
+def get_trading_signal(opinions):
     # weight = {'csi300': 0, 'bond': 0}
     if opinions['增长'] == -1 and opinions['通胀'] == -1:  # 衰退
-        weight = {'csi300': 0.6, 'bond': 0.4}
+        weight = {'沪深300': 0.6, '国债': 0.4}
     elif opinions['增长'] == -1 and opinions['通胀'] == 1:  # 滞胀
-        weight = {'csi300': 0.7, 'bond': 0.3}
+        weight = {'沪深300': 0.7, '国债': 0.3}
     elif opinions['增长'] == 1 and opinions['通胀'] == -1:  # 复苏
-        weight = {'csi300': 0.9, 'bond': 0.1}
+        weight = {'沪深300': 0.9, '国债': 0.1}
     elif opinions['增长'] == 1 and opinions['通胀'] == 1:  # 过热
-        weight = {'csi300': 0.9, 'bond': 0.1}
+        weight = {'沪深300': 0.9, '国债': 0.1}
     else:
-        weight = {'csi300': 0.8, 'bond': 0.2}
+        weight = {'沪深300': 0.8, '国债': 0.2}
     # elif opinions['增长'] == 0 and opinions['通胀'] == 1:
     #     pass
     # elif opinions['增长'] == 0 and opinions['通胀'] == -1:

@@ -12,6 +12,7 @@ Return
                      }
 '''
 # 买卖都用开盘价
+import matplotlib.pyplot as plt
 import pandas as pd
 import datetime
 import os
@@ -19,12 +20,12 @@ import pickle
 
 
 class Asset():
-    def __init__(self, type, price_dict):
+    def __init__(self, type):
         # 传入当日 价格数据
         self.type = type
 
         # 交易数据
-        self.price = price_dict[type]
+        # self.price = price_dict[type]
 
         # 以前的 trade数据
         self.trade_gain = None
@@ -41,12 +42,14 @@ class Asset():
                          f'{count}\n')
         return f_string
 
-    def buy(self, position):
-        self.position = position
+    def buy(self, price_data, amount):
+        self.get_current_price(price_data)
+        self.position = amount // self.price
         self.position_value = self.position * self.price
         return self.position_value
 
-    def sell(self):
+    def sell(self, price_data):
+        self.get_current_price(price_data)
         self.position = 0
         self.position_value = self.position * self.price
         # return self.position_value
@@ -66,6 +69,10 @@ class Trade():
         self.date_time = current_date  # signalData.date_time
         self.time_frequency = 240  # 日度
         self.price_data = price_data
+        self.stock = Asset(type='沪深300')
+        self.bond = Asset(type='国债')
+        self.current_price = self.price_data[current_date]
+        self.weight = None
 
         self.trade_data_path = r'C:\Users\shao\Desktop\CUHKSZ\programming\project\trade_data.csv'
 
@@ -94,81 +101,58 @@ class Trade():
                          f'{count}\n')
         return f_string
 
-    def update(self, date, signal):
+    def update(self, date):
         self.date_time = date  # signalData.date_time
-        self.signal = signal
-        self.price = self.price_data[date]
+        # self.weight = weight
+        self.current_price = self.price_data[date]
 
     # 买入合约，并获取 头寸净值、策略净值
-    def buy(self, hold_weight):
-        # 创建 stock 实例 列表
-        for stock_code in stock_list:
-            self.holding_stock.append(Asset(stock_code, self.stock_prices))
-            self.holding_stock_code.append(stock_code)
-
+    def buy(self, weight):
         # 对每个股票进行买卖
-        self.position_ratio = 1 / len(self.holding_stock_code)
-        temp_position_value = 0
-        for stock in self.holding_stock:
-            position = (self.position_ratio * self.cash) // ((1 + self.commission) * stock.r_price * 100) * 100
-            stock.buy(position)
-            temp_position_value += stock.position_value
+        self.weight = weight
+        self.stock.buy(self.current_price, weight['沪深300'] * self.allocation)
+        self.bond.buy(self.current_price, weight['国债'] * self.allocation)
 
-        self.all_position_value = temp_position_value
-        self.cost = self.commission * self.all_position_value
+        self.all_position_value = self.stock.position_value + self.bond.position_value
 
-        self.cash = self.cash - self.cost - self.all_position_value
+        self.cash = self.cash - self.all_position_value
         self.value = self.cash + self.all_position_value
 
-    def sell(self, stock_list):
+    def sell(self):
         # 非多即空 和 无空仓 的交易一致
         sold_position_value = 0
-        hold_position_value = 0
-        # assert len(self.holding_stock_code) == len(set(self.holding_stock_code)), \
-        #    'repeated value:{}, {}, {}'.format(self.holding_stock_code, sorted(set(self.holding_stock_code), key=self.holding_stock_code.index),0)
 
-        i = 0
-        while i < len(self.holding_stock):
-            stock = self.holding_stock[i]
-            if stock.stock_code in stock_list:  # 卖出对应的股票
-                stock.get_position_value(self.stock_prices)
-                sold_position_value += stock.position_value
-                stock.sell()
-                self.holding_stock.pop(i)
-                self.holding_stock_code.pop(i)
-                i -= 1  # 删除之后 列表长度小了一个，要倒退一步
-            else:  # 更新持仓净值
-                stock.get_position_value(self.stock_prices)
-                hold_position_value += stock.position_value
-            i += 1
+        self.stock.get_position_value(self.current_price)
+        sold_position_value += self.stock.position_value
+        self.stock.sell(self.current_price)
 
-        # assert len(sold) == len(stock_list), f'sold: {sold}, required to sell: {stock_list}. some stock cannot sell!'
-        self.all_position_value = hold_position_value
-        self.cost = self.commission * sold_position_value
-        self.cash = self.cash - self.cost + sold_position_value
+        self.bond.get_position_value(self.current_price)
+        sold_position_value += self.bond.position_value
+        self.bond.sell(self.current_price)
+
+        self.all_position_value = 0
+        self.cash = self.cash + sold_position_value
 
         self.value = self.cash + self.all_position_value
 
     def hold(self):
         # update current position value
-        temp_position_value = 0
-        for stock in self.holding_stock:
-            stock.get_position_value(self.stock_prices)
-            temp_position_value += stock.position_value
-        self.all_position_value = temp_position_value  # 头寸计算用 开盘价
+        self.stock.get_position_value(self.current_price)
+        self.bond.get_position_value(self.current_price)
+        self.all_position_value = self.stock.position_value + self.bond.position_value
+
+        # 头寸计算用 开盘价
         self.cost = 0
         # cash 不变
+        self.value = self.cash + self.all_position_value
 
-    def trade(self, stock_list=None):
-        self.stock_list = stock_list
+    def trade(self, weight=None):
         if self.signal == 1:  # 买入
-            assert len(stock_list) != 0
-            self.buy(stock_list)
+            self.buy(weight)
 
         elif self.signal == -1:  # 卖出持仓股，不持股
-            assert len(stock_list) != 0
-            assert len(self.holding_stock) >= len(stock_list)
-            self.sell(stock_list)
+            self.sell()
+            self.buy(weight)
             # sell_cost = self.cost
 
         elif self.signal == 0:  # 无交易
@@ -189,19 +173,18 @@ class Trade():
                                     'value', 'signal', 'cost',
                                     'stock_code','r_price','position', 'position_value'}
         '''
-        param_list = ['date_time', 'all_position_value',
-                      'cash', 'value', 'signal', 'cost']
+        param_list = ['all_position_value',
+                      'cash', 'value', 'weight']
         value = {name: getattr(self, name) for name in param_list}
 
         # 每支个股的数据
-        stock_param = ['stock_code', 'r_price', 'position', 'position_value']
-        if len(self.holding_stock) != 0:
-            for i in range(len(self.holding_stock)):
-                for name in stock_param:
-                    value[name + '_' + str(i + 1)] = getattr(self.holding_stock[i], name)
+        stock_param = ['type', 'price', 'position', 'position_value']
+        for i in [self.stock, self.bond]:
+            for name in stock_param:
+                value[getattr(i, 'type') + '_' + name] = getattr(i, name)
 
         self.trade_data = {self.date_time: value}
-        return self.trade_data
+        return value
 
     def show_trading_info(self, stock_list):
         if self.signal > 0:
@@ -259,30 +242,62 @@ def load_obj(name):
 
 
 if __name__ == '__main__':
-    buy_stock = load_obj(r'data\lossstop(4).pkl')
-    all_trade_date = [key for key, value in buy_stock.items()]
+    from strategy import *
+    trade_dt, trade_price = load_data(path='国内股债收盘价.xlsx')
+    opinion_dt, opinions = load_data(path='增长-通胀观点.xlsx')
+    print(trade_price[trade_dt[0]], opinions[opinion_dt[0]])
+
+    trade_dt = [d for d in trade_dt if d>=opinion_dt[0]]
+    # buy_stock = load_obj(r'data\lossstop(4).pkl')
+    # all_trade_date = [key for key, value in buy_stock.items()]
 
     # get price data and change into dict
-    stock_data = pd.read_csv('data\open.csv', header=0, index_col=0)
-    stock_data.index = [(datetime.datetime.strptime(x, '%Y-%m-%d')) for x in stock_data.index]
-    stock_prices = stock_data.to_dict(orient='index')
-    benchmark = pd.read_csv('data\HS300_open.csv', header=0, index_col=0)
-    benchmark.index = [(datetime.datetime.strptime(x, '%Y-%m-%d')) for x in
-                       benchmark.index]  # pd.to_datetime(benchmark.index)
-    benchmark_price = benchmark['OPEN'].to_dict()
+    # stock_data = pd.read_csv('data\open.csv', header=0, index_col=0)
+    # stock_data.index = [(datetime.datetime.strptime(x, '%Y-%m-%d')) for x in stock_data.index]
+    # stock_prices = stock_data.to_dict(orient='index')
+    # benchmark = pd.read_csv('data\HS300_open.csv', header=0, index_col=0)
+    # benchmark.index = [(datetime.datetime.strptime(x, '%Y-%m-%d')) for x in
+    #                    benchmark.index]  # pd.to_datetime(benchmark.index)
+    # benchmark_price = benchmark['OPEN'].to_dict()
 
     # create instance
-    trade = Trade(stock_prices, benchmark_price, current_date=all_trade_date[0])  # 传入数据
+    trade = Trade(trade_price, current_date=trade_dt[0])  # 传入数据
+    trade.buy(weight={'沪深300': 0.8, '国债': 0.2})
 
-    for date in all_trade_date:
-        signal = buy_stock[date]['signal']
+    # begin_of_month = [trade_dt[i+1] for i in range(len(trade_dt)) if trade_dt[i] in opinion_dt]
+    trade_info = {}
+    begin_of_month = False
+    for date in trade_dt:
         # update the backtest data
-        trade.update(date, signal)
-        # print(trade)
-        trade.trade(buy_stock[date]['stocks'])
-        trade.get_trade_data()
-        # print(trade.trade_data)
-        trade.show_trading_info(buy_stock[date]['stocks'])
-        trade.save_trade_data()
+        trade.update(date)  # 更新价格
+        if begin_of_month:  # 买入 date in
+            trade.sell()
+            trade.buy(weight)
+        else:
+            trade.hold()
+        trade_info[date] = trade.get_trade_data()
+        print(date, trade.value)
 
-    trade.get_all_trade_data()
+        # trade.get_trade_data()
+        # # print(trade.trade_data)
+        # trade.show_trading_info(buy_stock[date]['stocks'])
+        # trade.save_trade_data()
+
+        if date in opinion_dt:
+            begin_of_month = True  # 第二天是 月初
+            weight = get_trading_signal(opinions[date])
+            print(date,'月末', weight)
+        else:
+            begin_of_month = True
+
+    # trade.get_all_trade_data()
+    print(trade_info[date])
+    trade_data = pd.DataFrame.from_dict(trade_info, 'index')
+    print(trade_data)
+    print(trade_data.columns)
+
+    plt.plot(trade_data['value']/trade_data['value'].iloc[0], label='策略')
+    plt.plot(trade_data['沪深300_price']/trade_data['沪深300_price'].iloc[0], label='沪深300')
+    plt.plot(trade_data['国债_price']/trade_data['国债_price'].iloc[0], label='国债')
+    plt.legend()
+    plt.show()
