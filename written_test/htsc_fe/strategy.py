@@ -21,7 +21,10 @@ def load_data(path='国内股债收盘价.xlsx'):
     return dates, data_dict
 
 
-def get_trading_signal(opinions):
+def get_trading_signal(opinions=None, benchmark=False):
+    if benchmark:
+        return {'沪深300': 0.2, '国债': 0.8}
+
     # weight = {'csi300': 0, 'bond': 0}
     if opinions['增长'] == -1 and opinions['通胀'] == -1:  # 衰退
         weight = {'沪深300': 0.6, '国债': 0.4}
