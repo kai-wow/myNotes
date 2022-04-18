@@ -1,11 +1,14 @@
 '''
 根据交易结果数据 进行策略评估
-计算 最大回撤率、最大回撤时间、胜率、盈亏比、平均持仓周期、策略年收益、策略波动率、
-标的年收益、标的年波动率、夏普比率 等指标来对策略进行评估
+
+
+
 Class & Functions
 - get_return    [function]  获取收益率
 - Evaluate      [class]
-    需要调用 get_all_trade_data()函数 , 获取当前时刻之前的所有交易数据
+    计算 最大回撤率、最大回撤时间、胜率、盈亏比、策略年收益、策略波动率、
+    标的年收益、标的年波动率、夏普比率 等指标来对策略进行评估
+
 
 Return
 - perform_data  [dict]  {year: 
@@ -53,7 +56,6 @@ def get_return(trade_data, freq='day', price_name='benchmark_price') -> series:
         get_lastday['lastyear_price'] = get_lastday[price_name].shift(1).fillna(first_price)
 
         # 求年化收益率:  [Pt/P(t-1) - 1] / (Tt-T(t-1)/244)
-        # 开盘价--今年年末的开盘价 比 去天年末开盘价
         get_lastday['ret'] = np.divide(np.divide(get_lastday[price_name], get_lastday['lastyear_price']) - 1,
                                        ((get_lastday['day_num']) / 244))
         return get_lastday['ret']
@@ -66,10 +68,6 @@ class Evaluate():
 
     # 获取最大回撤，最大回撤时间
     def get_max_drawdown(self) -> DataFrame:
-        '''
-        Return
-            max_dd_data [dataframe]     含字段['year', 'max_drawdown', 'max_drawdown_time']
-        '''
         price_data = self.trade_data.copy()
 
         price_data['cummax_price'] = price_data['value'].cummax()
@@ -83,7 +81,6 @@ class Evaluate():
         max_dd_data['year'] = max_dd_data.index.year
         max_dd_data.reset_index(inplace=True)
         max_dd_data.rename(columns={'index': 'max_drawdown_time', 'dd_ratio': 'max_drawdown'}, inplace=True)
-        # self.year_drawdown_ratio = max_dd_data.to_dict('index')
 
         # 总的  最大回撤 和 最大回撤时间
         self.max_drawdown = price_data['dd_ratio'].min()
@@ -96,7 +93,7 @@ class Evaluate():
         daily_gain = self.trade_data['value'] - self.trade_data['value'].shift(1)
         return daily_gain
 
-    def get_holding_gain(self, save=False) -> DataFrame:
+    def get_holding_gain(self) -> DataFrame:
         # 开平仓收益---> 后续来计算盈亏比 & 胜率
         each_trade = self.trade_data[self.trade_data['position_chg'] > 0]
         each_trade = each_trade[['value', 'all_position_value', 'cash']]
@@ -104,15 +101,9 @@ class Evaluate():
         # 计算收益，把 扣除的佣金费用加回去
         each_trade['gain'] = each_trade['value'] - each_trade['value'].shift(1)  # 计算收益
         self.holding_data = each_trade.copy()
-        if save:
-            self.holding_data.to_csv(r'C:\Users\shao\Desktop\CUHKSZ\programming\project\holding_data.csv')
         return self.holding_data
 
     def get_holding_perform(self) -> DataFrame:
-        '''
-        Return
-            holding_perform     [dateframe] 字段['year', 'win_ratio','win_loss_ratio']
-        '''
         # 计算每次开平仓的收益 --> 算胜率、盈亏比
         self.get_holding_gain()  # 计算开平仓收益
 
@@ -176,7 +167,6 @@ class Evaluate():
 
         perform_data = pd.concat([holding_perform, ret_vol_strategy, sharpe], axis=1)  #
         perform_data['year'] = perform_data.index.year
-
         max_drawdown = self.get_max_drawdown()
 
         self.evaluate_data = pd.merge(max_drawdown, perform_data, on='year', how='left')
@@ -185,13 +175,3 @@ class Evaluate():
         # 字典形式 
         self.evaluate_data = self.evaluate_data.to_dict('index')
         return self.evaluate_data
-
-
-if __name__ == '__main__':
-    trade_data = 0
-    analyse = Evaluate(trade_data)
-
-    evaluate_data = analyse.evaluate()
-    for key, value in evaluate_data.items():
-        print(key, ': ', value)
-    # print(evaluate_data)

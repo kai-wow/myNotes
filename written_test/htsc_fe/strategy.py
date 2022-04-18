@@ -1,51 +1,50 @@
 """ 2020.08.28  9:57
-美林时钟
+美林时钟 策略
+需要调用 Trade，Evaluate，Picture 三个文件中的函数
 """
 
-import matplotlib
-import matplotlib.pyplot as plt
-import pandas as pd
+from Trade import *
+from Evaluate import *
+from Picture import *
 
-matplotlib.rcParams['axes.unicode_minus'] = False
-plt.rcParams['font.sans-serif'] = ['SimHei']
+# 读取数据
+trade_dt, trade_price = load_data(path='国内股债收盘价.xlsx')
+opinion_dt, opinions = load_data(path='增长-通胀观点.xlsx')
 
+# 获得交易日，及交易权重
+weights = {}
+benchmark_weight = {}
+for i in range(len(trade_dt)):
+    if trade_dt[i] in opinion_dt:
+        try:
+            weights[trade_dt[i + 1]] = get_trading_signal(opinions[trade_dt[i]])
+            benchmark_weight[trade_dt[i + 1]] = {'沪深300': 0.2, '国债': 0.8}
+        except IndexError:  # 溢出
+            pass
 
-def load_data(path='国内股债收盘价.xlsx'):
-    # 数据导入
-    data = pd.read_excel(path)
-    data.set_index(data["日期"], inplace=True)
-    dates = list(data.index)  # 记录交易日信息，方便以后进行查找
-    data_dict = data.to_dict(orient='index')
-    # csi300 = data['沪深300'].to_dict()
-    # bond = data['国债'].to_dict()  # 国债ETF专属数据结构。仅保留收盘价格
-    return dates, data_dict
+# 截取交易日，使得第一天可根据 增长-通胀观点 进行首次买入
+trade_dt = [d for d in trade_dt if d > opinion_dt[0]]
+# 调用 Trade 类，进行【美林时钟策略】的模拟交易
+trade = Trade(trade_price, current_date=trade_dt[0])  # 传入数据
+trade_info = trade.trade(trade_dt, weights, show_info=True)
+trade_data = pd.DataFrame.from_dict(trade_info, 'index')  # 获得交易持仓净值数据
 
+# 【对比策略】的模拟交易：“股票20%-债券80%-月度再平衡”策略
+benchmark = Trade(trade_price, current_date=trade_dt[0])  # 传入数据
+benchmark_trade_info = benchmark.trade(trade_dt, benchmark_weight, show_info=False)
+benchmark_trade_data = pd.DataFrame.from_dict(benchmark_trade_info, 'index')
 
-def get_trading_signal(opinions=None, benchmark=False):
-    if benchmark:
-        return {'沪深300': 0.2, '国债': 0.8}
+trade_data['benchmark_value'] = benchmark_trade_data['value']
 
-    # weight = {'csi300': 0, 'bond': 0}
-    if opinions['增长'] == -1 and opinions['通胀'] == -1:  # 衰退
-        weight = {'沪深300': 0.6, '国债': 0.4}
-    elif opinions['增长'] == -1 and opinions['通胀'] == 1:  # 滞胀
-        weight = {'沪深300': 0.7, '国债': 0.3}
-    elif opinions['增长'] == 1 and opinions['通胀'] == -1:  # 复苏
-        weight = {'沪深300': 0.9, '国债': 0.1}
-    elif opinions['增长'] == 1 and opinions['通胀'] == 1:  # 过热
-        weight = {'沪深300': 0.9, '国债': 0.1}
-    else:
-        weight = {'沪深300': 0.8, '国债': 0.2}
-    # elif opinions['增长'] == 0 and opinions['通胀'] == 1:
-    #     pass
-    # elif opinions['增长'] == 0 and opinions['通胀'] == -1:
-    #     pass
-    # elif opinions['增长'] == 1 and opinions['通胀'] == 1:
-    #     pass
-    return weight
+# 回测指标分析
+analyse = Evaluate(trade_data)
+evaluate_data = analyse.evaluate()
+# 绘图
+picture = Pictures(analyse.trade_data, analyse.holding_data)
+picture.paint()
 
-if __name__ == "__main__":
-    trade_dt, trade_price = load_data(path='国内股债收盘价.xlsx')
-    opinion_dt, opinions = load_data(path='增长-通胀观点.xlsx')
-    print([d for d in opinion_dt if d in trade_dt])
-    print(trade_price[trade_dt[0]], opinions[opinion_dt[0]])
+# 对比策略的回测分析 与 绘图
+# analyse = Evaluate(benchmark_trade_data)
+# evaluate_data = analyse.evaluate()
+# picture = Pictures(analyse.trade_data, analyse.holding_data)
+# picture.paint()

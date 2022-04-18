@@ -1,7 +1,8 @@
 '''
 根据因子信号进行交易
+
 Class
-- Stock  进行单只股票的 买、卖、更新当日市值 等操作
+- Asset  进行单个资产（如，股或债）的 买、卖、更新当日市值 等操作
 - Trade  根据策略信号 进行 买buy()、卖sell()、更新持仓净值hold() 等操作
     - 需调用 Stock 类
 Return
@@ -12,8 +13,30 @@ Return
                      }
 '''
 
+# 数据读取
+def load_data(path='国内股债收盘价.xlsx'):
+    # 数据导入
+    data = pd.read_excel(path)
+    data.set_index(data["日期"], inplace=True)
+    dates = list(data.index)  # 记录交易日信息，方便以后进行查找
+    data_dict = data.to_dict(orient='index')
+    return dates, data_dict
 
-# 买卖都用开盘价
+
+def get_trading_signal(opinions=None):
+    if opinions['增长'] == -1 and opinions['通胀'] == -1:  # 衰退
+        weight = {'沪深300': 0.1, '国债': 0.9}
+    elif opinions['增长'] == -1 and opinions['通胀'] == 1:  # 滞胀
+        weight = {'沪深300': 0.15, '国债': 0.85}
+    elif opinions['增长'] == 1 and opinions['通胀'] == -1:  # 复苏
+        weight = {'沪深300': 0.5, '国债': 0.5}
+    elif opinions['增长'] == 1 and opinions['通胀'] == 1:  # 过热
+        weight = {'沪深300': 0.3, '国债': 0.7}
+    else:
+        weight = {'沪深300': 0.2, '国债': 0.8}
+
+    return weight
+
 
 class Asset():
     def __init__(self, type):
@@ -107,7 +130,7 @@ class Trade():
         Args:
             trade_dt: 所有交易日期 (第一天是换仓日期/月初)
             weights: 所有月末换仓日及换仓权重； {换仓日期: 换仓权重}
-
+            show_info: 是否展示每天的交易细节，默认为False
         Returns:
             dict 交易数据
         """
@@ -188,24 +211,24 @@ if __name__ == '__main__':
 
     trade_data['benchmark_value'] = benchmark_trade_data['value']
 
-    plt.figure(figsize=(7, 5))
-    plt.plot(trade_data['value'] / trade_data['value'].iloc[0], 'r', label='策略')
-    plt.plot(benchmark_trade_data['value'] / benchmark_trade_data['value'].iloc[0], color='k', label='benchmark')
-    plt.plot(trade_data['沪深300_price'] / trade_data['沪深300_price'].iloc[0], 'b--', linewidth=1.0, label='沪深300')
-    plt.plot(trade_data['国债_price'] / trade_data['国债_price'].iloc[0], 'g--', label='国债')
+    plt.figure(figsize=(9, 5))
+    plt.plot(trade_data['value'] / trade_data['value'].iloc[0], label='策略')
+    plt.plot(benchmark_trade_data['value'] / benchmark_trade_data['value'].iloc[0],  label='benchmark')
+    plt.plot(trade_data['沪深300_price'] / trade_data['沪深300_price'].iloc[0],  linewidth=1.0, label='沪深300')
+    plt.plot(trade_data['国债_price'] / trade_data['国债_price'].iloc[0],  label='国债')
     plt.grid(visible=True)
     plt.legend()
     plt.show()
 
-    analyse = Evaluate(trade_data)
-    evaluate_data = analyse.evaluate()
-    print(evaluate_data)
-
-    picture = Pictures(analyse.trade_data, analyse.holding_data)
-    picture.paint()
-
-    # analyse = Evaluate(benchmark_trade_data)
+    # analyse = Evaluate(trade_data)
     # evaluate_data = analyse.evaluate()
+    # print(evaluate_data)
+    #
+    # picture = Pictures(analyse.trade_data, analyse.holding_data)
+    # picture.paint()
+
+    analyse = Evaluate(benchmark_trade_data)
+    evaluate_data = analyse.evaluate()
     # picture = Pictures(analyse.trade_data, analyse.holding_data)
     # picture.paint()
 
