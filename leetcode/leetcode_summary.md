@@ -25,6 +25,9 @@
 |      | 1. <br/>2.    | 
 |      | 1. <br/>2.   |
 # 易错点
+## list.append()
+不要 `return lista.append()`, 这样只会返回一个空值！
+要先append() 再return
 ## 迭代的终止条件
 ### for range 迭代
 1. 若要循环n次，则为`for i in range(n)`
