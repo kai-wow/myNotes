@@ -247,12 +247,17 @@ git config --global http.sslVerify false\
 本地有缓存，需要清理掉
 
 执行前记得先把所有需要的东西先push到git，否则可能被删除
-
+```
 git rm -r --cached .
  
 git add .
  
 git commit -m 'update .gitignore'
+```
+or
+```
+git filter-branch -f --index-filter 'git rm --cached --ignore-unmatch root/bigfile.csv'
+```
 
 # Markdown
 官方文档

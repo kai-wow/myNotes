@@ -5,9 +5,9 @@
 | 双指针法    |  2   | 11, 31, 32, 42 |      |
 | 单调栈      |  1   |           42 |         |
 | 栈          |  1   |        20, 32|         |
-| 动态规划    |  3   |  22, 32, 42 |         |
+| 动态规划    |  4   |  22, 32, 42,212 |         |
 |确定有限状态机|  1   |          8 |         |
-|哈希表       |  2   |      3, 20 |         |
+|哈希表       |  4   |   1, 3, 20, 530 |         |
 |回溯算法     |  2   |     22, 46, 77 |         |
 |二分法       |  3   | 704, 278, 35 | 边界上很难搞|
 
@@ -968,9 +968,122 @@ def longestCommonPrefix(self, strs):
                 return s2[:i]
         return s1
 ```
-## ？
+## 53 最大子数组和
+### 1. 题目
+给你一个整数数组 nums ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+子数组 是数组中的一个连续部分。
+
+示例 1：
+
+输入：nums = [-2,1,-3,4,-1,2,1,-5,4]\
+输出：6\
+解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。
+
+### 2. 考点与优秀答案
+#### 考点
+
+#### 优秀答案: 动态规划
+假设 nums 数组的长度是 n，我们用 f(i) 代表**以第 i 个数结尾**的「连续子数组的最大和」
+> 此处若令 f(i) = 前 i 个数的「连续子数组的最大和」，则无法进行递归，需要改动为 **以第 i 个数结尾**的「连续子数组的最大和」
+
+这样设定即可使用动态规划，有
+$f(i) = \max \{ f(i-1) + \textit{nums}[i], \textit{nums}[i] \} $
+
+很显然我们要求的答案就是：
+$\max_{0 \leq i \leq n-1} \{ f(i) \} $
+
+
+因此可以写出一个时间复杂度 O(n)、空间复杂度 O(1) 的实现：
+```python
+class Solution(object):
+    def maxSubArray(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        pre = nums[0]
+        ans = nums[0]
+        for i in range(1, len(nums)):
+            pre = max(pre + nums[i], nums[i])
+            ans = max(ans, pre)
+        return ans
+```
+
+## 1 两数之和
 ### 1. 题目
 ### 2. 考点与优秀答案
 #### 考点
 #### 优秀答案
+##### 1. 暴力解法
+双循环
 
+时间复杂度：O(N^2)
+
+空间复杂度：O(1)。
+
+##### 2. 哈希表
+暴力解法的时间复杂度较高的原因是寻找 target - x 的时间复杂度过高。
+
+使用哈希表，可以将寻找 target - x 的时间复杂度降低到从O(N) 降低到 O(1)。
+
+这样我们创建一个哈希表，对于每一个 x，
+1. 首先查询哈希表中是否存在 target - x
+2. 然后将 x 插入到哈希表中.
+即可保证不会让 x 和自己匹配。
+
+
+```python
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        hashtable = dict()  # key 为数值，value为数值的索引
+        for i, num in enumerate(nums):
+            if target - num in hashtable: # 哈希表中是否存在 target - x
+                return [hashtable[target - num], i]
+            hashtable[nums[i]] = i  # 将 x 插入到哈希表中
+        return []
+```
+时间复杂度：O(N)
+空间复杂度：O(N)
+
+## 121 买卖股票的最佳时机
+### 1. 题目
+给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
+
+你只能选择 某一天 买入这只股票，并选择在 未来的某一个不同的日子 卖出该股票。设计一个算法来计算你所能获取的最大利润。
+
+返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。
+
+
+示例 1：\
+输入：[7,1,5,3,6,4]\
+输出：5\
+解释：在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案: 动态规划
+先找迄今为止的最低历史价格，
+则最大利润为
+$dp[i] = max(dp[i−1], prices[i]−minprice)$
+$maxprofit = dp[n]$
+
+```python
+class Solution(object):
+    def maxProfit(self, prices):
+        """
+        :type prices: List[int]
+        :rtype: int
+        """
+        minprice = int(1e10)  # 足够大的数
+        maxprofit = 0
+        for p in prices:
+            minprice = min(minprice, p)
+            maxprofit = max(maxprofit, p - minprice)
+        return maxprofit
+```
+## ？
+
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案

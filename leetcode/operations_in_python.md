@@ -31,4 +31,59 @@ for i in range(3):
 4 2\
 8 1\
 
-## 
+# 位运算
+https://leetcode.cn/problems/power-of-two/solution/5chong-jie-fa-ni-ying-gai-bei-xia-de-wei-6x9m/
+
+常用位操作
+
+1. 判断奇偶
+(x & 1) == 1 ---等价---> (x % 2 == 1)
+(x & 1) == 0 ---等价---> (x % 2 == 0)
+
+2. x / 2 ---等价---> x >> 1
+3. x &= (x - 1) ------> 把x最低位的二进制1给去掉
+4. x & -x -----> 得到最低位的1
+5. x & ~x -----> 0
+
+
+## & 与
+只有两个值对应位置都取1时，结果取1，否则取0
+eg. (101) & (110) = (100) 右边两位对应的值不全为1，因而取0，第一位都为1，因而取1.
+
+拓展：
+- n & (n-1): 将n中最低位的1变为0
+- n & (1<<i): 看n的二进制数中第i位是否为1
+    因为n此处为二进制数，因而 (2^i) 也要用 二进制表示，否则结果报错
+- lowbit = x & (-x) 得到最低位的1
+    -x 为取反操作，01取反
+
+python 运算符号 &
+```
+class Solution:
+    def isPowerOfTwo(self, n: int) -> bool:
+        return n > 0 and (n & (n-1) == 0)
+
+class SSolution:
+    def isPowerOfTwo(self, n: int) -> bool:
+        return n > 0 and (n & -n) == n 
+```
+## | 或
+## ~ 非
+## ^ 异或
+异或运算有以下三个性质。
+1. 任何数和 0 做异或运算，结果仍然是原来的数，即 a⊕0=a。
+2. 任何数和其自身做异或运算，结果是 0，即 a⊕a=0。
+3. 异或运算满足交换律和结合律，即a⊕b⊕a=b⊕a⊕a=b⊕(a⊕a)=b⊕0=b。
+
+python 运算符号 ^
+```
+class Solution:
+    def singleNumber(self, nums: List[int]) -> int:
+        ans = 0
+        for n in nums:
+            ans = ans ^ n  # 异或
+        return ans		
+```	
+
+## << 左移
+## >> 右移
