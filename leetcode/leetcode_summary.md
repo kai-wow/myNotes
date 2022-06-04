@@ -1081,6 +1081,42 @@ class Solution(object):
             maxprofit = max(maxprofit, p - minprice)
         return maxprofit
 ```
+
+## 36 有效的数独
+
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案：哈希表
+哈希表储存每行、每列、每个小block中数值出现次数
+
+复杂度分析：
+    时间复杂度：O(1)。遍历一次即可。
+    空间复杂度：O(1)。由于数独的大小固定，因此哈希表的空间也是固定的。
+
+```python
+class Solution(object):
+    def isValidSudoku(self, board):
+        """
+        :type board: List[List[str]]
+        :rtype: bool
+        """
+        # list 做字典来储存 每行/列/bolck的9个元素 出现次数（相当于用位置 取代 字典的key）
+        rownums = [[0] * 9 for _ in range(9)]  # 9*9
+        colnums = [[0] * 9 for _ in range(9)]  # 9*9
+        blocknums = [[[0] * 9 for _ in range(3)] for __ in range(3)]  # 3*3*9
+
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] != '.':
+                    num = int(board[i][j]) - 1  # 要减去1（数值的取值为1-9，对应的index为0-8）
+                    rownums[i][num] += 1  # 第 i 行
+                    colnums[j][num] += 1  # 第 j 列
+                    blocknums[i//3][j//3][num] += 1  # 第 i//3 行 j//3 列 的小block
+                    if rownums[i][num] >1 or colnums[j][num] >1 or blocknums[i//3][j//3][num] >1:
+                        return False
+        return True
+```
 ## ？
 
 ### 1. 题目
