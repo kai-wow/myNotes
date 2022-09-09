@@ -1,7 +1,9 @@
-# 简介
-主要以markdown文件记录本人的自学笔记
+# Introduction
+This repository contains notes during my self-learning process.
 
-git push -u notes main
-
-# 目录
-1. git_and_markdown
+<!-- git push -u notes main -->
+# What is Included
+1. notes of programming language
+   - including c++, linux, r, vba
+2. notes of git and markdown
+3. notes of leetcode

@@ -1,4 +1,4 @@
-```
+```vb
 Sub ExtractVendorInfo()
     Dim sPath As String 'path of folder containing info
     Dim sFileName As String '
