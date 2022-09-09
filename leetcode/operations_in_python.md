@@ -85,6 +85,23 @@ for i in range(3):
 8 1\
 
 # 数据结构 collection 库
-哈希表：统计字符串中每个字符出现的次数 `frequency = collections.Counter(s)` 
+## 哈希表 Counter
+`frequency = collections.Counter(s)` 本质为字典, 统计字符串中每个字符出现的次数 
 > 可进行字典加减操作：key相同的，value值加减（会忽略掉value为零或者小于零的计数）
-队列 `q = collections.deque()`
+> 
+## 队列 deque
+`q = collections.deque()`
+
+常见操作：
+```python
+queue = collections.deque([q])
+# 右边的操作同list
+queue.append(item)  
+queue.pop()             
+# 左边
+node = queue.popleft()  #弹出最左边的项目
+queue.appendleft(item)  #在左边添加 item 中的所有项目
+queue.clear()              #清空队列
+queue.extend(iterable)     #在右边(末尾)添加 iterable 中的所有项目
+queue.extendleft(item)   #在左边(开始)添加 item 中的所有项目
+```

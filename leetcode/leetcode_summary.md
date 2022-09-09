@@ -1117,8 +1117,565 @@ class Solution(object):
                         return False
         return True
 ```
-## ？
 
+
+## 94 144 145 二叉树的中序/前序/后序遍历 (DFS)
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+递归\
+迭代
+#### 优秀答案
+##### 递归
+1. 前序遍历：根左右
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+class Solution(object):
+    def preorderTraversal(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        if not root:
+            return []
+        return [root.val] + self.preorderTraversal(root.left) + self.preorderTraversal(root.right)
+```
+2. 中序遍历：左根右
+```python
+class Solution(object):
+    def inorderTraversal(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        if not root:
+            return []
+
+        return self.inorderTraversal(root.left) + [root.val] + self.inorderTraversal(root.right)
+```
+
+3. 后序遍历：左右根
+```python
+class Solution(object):
+    def postorderTraversal(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        if not root:
+            return []
+
+        return self.postorderTraversal(root.left) + self.postorderTraversal(root.right) + [root.val] 
+```
+##### 迭代
+1. 前序遍历：根左右	
+```python
+class Solution:
+    def preorderTraversal(self, root: TreeNode) -> List[int]:
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        # 迭代
+        res = []
+        if not root:
+            return res
+        
+        stack = []
+        node = root
+        while stack or node:
+            while node:
+                res.append(node.val)
+                stack.append(node)
+                node = node.left
+            node = stack.pop()
+            node = node.right
+        return res
+```
+2. 中序遍历：左根右	
+```python
+class Solution:
+    def preorderTraversal(self, root: TreeNode) -> List[int]:
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        # 迭代
+        res = []
+        if not root:
+            return res
+        
+        stack = []
+        node = root
+        while stack or node:
+            if node:
+                stack.append(node)
+                node = node.left
+            else:
+                node = stack.pop()
+                res.append(node.val)
+                node = node.right
+        return res
+```
+或
+```python
+class Solution:
+    def preorderTraversal(self, root: TreeNode) -> List[int]:
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        # 迭代
+        res = []
+        if not root:
+            return res
+        
+        stack = []
+        node = root
+        while stack or node:
+            while node:
+                stack.append(node)
+                node = node.left
+            node = stack.pop()
+            res.append(node.val)
+            node = node.right
+        return res
+```
+
+3. 后序遍历：左右根	
+```python
+class Solution:
+    def postorderTraversal(self, root: TreeNode) -> List[int]:
+        res = []
+        if not root:
+            return res
+            
+        stack = []
+        node = root
+        prev = None
+
+        while node or stack:
+            # 1.遍历到最左子节点
+            while node: 
+                stack.append(node)
+                node = node.left
+            
+            node = stack.pop()
+            # 2.遍历最左子节点的右子树(右子树存在 && 未访问过)
+            if node.right and node.right != prev:
+                # 重复压栈以记录当前路径分叉节点
+                stack.append(node)
+                node = node.right  
+            else:
+                # 后序：填充 res 在 node.left 和 node.right 后面
+                # 注意：此时node的左右子树应均已完成访问
+                res.append(node.val)
+                # 避免重复访问右子树[记录当前节点便于下一步对比]
+                prev = node
+                # 避免重复访问左子树[设空节点]
+                node = None
+        return res
+```
+##### Morris 遍历
+
+## 102 二叉树的层序遍历 (BFS)
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案
+直接层序遍历，不考虑数字处于哪一层：
+```python
+class Solution(object):
+    def levelOrder(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[List[int]]
+        """
+        res = []
+        if not root:
+            return res
+
+        d = collections.deque()
+        d.append(root)
+        while d:
+            cur = d.popleft()
+            res.append(cur.val)
+            if cur.left:
+                d.append(cur.left)
+            if cur.right:
+                d.append(cur.right)
+        return res
+```
+
+层序遍历，并以嵌套列表的形式考虑数字处于哪一层：
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+class Solution(object):
+    def levelOrder(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[List[int]]
+        """
+        res = []
+        if not root:
+            return res
+
+        d = collections.deque()
+        d.append(root)
+        while d:
+            length = len(d)
+            level = []
+            for i in range(length):  # length 即为某一层被append入队列的node总数
+                cur = d.popleft()
+                level.append(cur.val)  # 当前层级
+                if cur.left:
+                    d.append(cur.left)
+                if cur.right:
+                    d.append(cur.right)
+            res.append(level)
+        return res
+```
+
+#### 类似的题： 104 二叉树的最大深度
+```python
+class Solution(object):
+    def maxDepth(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        res = 0
+        if not root:
+            return res
+
+        d = collections.deque()
+        d.append(root)
+        while d:
+            l = len(d)
+            for i in range(l):
+                cur = d.popleft()
+                if cur.left:
+                    d.append(cur.left)
+                if cur.right:
+                    d.append(cur.right)
+            res += 1
+        return res
+```
+## 101 对称二叉树
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案
+##### 递归
+
+```python
+class Solution(object):
+    def isSymmetric(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        return self.check(root, root)
+    
+    def check(self, node1, node2):
+        if not node1 and not node2:
+            return True
+        elif not node1 or not node2:
+            return False
+        
+        if node1.val != node2.val:  # 左树节点值等于右树节点值
+            return False
+        # 左树的左子树 == 右树的右子树, 左树的右子树 == 右树的左子树
+        return self.check(node1.left, node2.right) and self.check(node1.right, node2.left)
+```
+##### 迭代
+层序遍历 + 回文判断
+1. deque 判断回文
+```python
+class Solution(object):
+    def isSymmetric(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        if not root:
+            return True
+        
+        d = collections.deque()
+        d.append(root)
+        while d:
+            l = len(d)
+            level = collections.deque()
+            for i in range(l):  # 每一层进行遍历
+                cur = d.popleft()
+                if not cur:
+                    level.append(None)  # 需要比对 null 是否对称
+                    continue
+                level.append(cur.val)
+                d.append(cur.left)  # 不判断是否有，直接 append
+                d.append(cur.right)
+            
+            # 判断每一层是否 对称
+            while len(level) >= 2:
+                left = level.popleft()
+                right = level.pop()
+                if left != right:
+                    return False
+        return True
+```
+2. list 判断回文 （用时更长）
+```python
+class Solution(object):
+    def isSymmetric(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        if not root:
+            return True
+        
+        d = collections.deque()
+        d.append(root)
+        while d:
+            l = len(d)
+            level = []
+            for i in range(l):
+                cur = d.popleft()
+                if not cur:
+                    level.append(None)
+                    continue
+                level.append(cur.val)
+                d.append(cur.left)  # 不判断是否有，直接append
+                d.append(cur.right)
+            
+            # 回文判断
+            if level != level[::-1]:
+                return False
+        return True
+```
+
+
+## 226 翻转二叉树
+### 1. 题目
+### 2. 优秀答案
+#### 优秀答案：迭代
+```python
+class Solution(object):
+    def invertTree(self, root):
+        """
+        :type root: TreeNode
+        :rtype: TreeNode
+        """
+        if not root:
+            return root
+
+        # 左子树 = 右子树
+        left = self.invertTree(root.left)
+        right = self.invertTree(root.right)
+        root.left, root.right = right, left
+        return root
+```
+
+## 112 路径总和
+### 1. 题目
+### 2. 优秀答案
+#### 优秀答案：迭代 DFS
+
+```python
+class Solution(object):
+    def hasPathSum(self, root, targetSum):
+        """
+        :type root: TreeNode
+        :type targetSum: int
+        :rtype: bool
+        """
+        if not root:
+            return False
+        if not root.left and not root.right:
+            return targetSum == root.val
+            
+        return self.hasPathSum(root.left, targetSum - root.val) or self.hasPathSum(root.right, targetSum - root.val)  # 迭代
+```
+#### 优秀答案：BFS
+层序遍历，一直遍历到每一个叶子节点，再判断路径总和是否符合
+> 注意： node队列 和 路径长度队列 是同步的
+```python
+class Solution(object):
+    def hasPathSum(self, root, targetSum):
+        """
+        :type root: TreeNode
+        :type targetSum: int
+        :rtype: bool
+        """
+        if not root:
+            return False
+        
+        nodes = collections.deque([root])
+        roads = collections.deque([root.val])
+        while nodes:
+            cur = nodes.popleft()
+            val = roads.popleft()
+            if not cur.left and not cur.right:  # 若是叶子节点
+                if val == targetSum:
+                    return True
+                continue
+            
+            if cur.left:
+                nodes.append(cur.left)
+                roads.append(cur.left.val + val) 
+            if cur.right:
+                nodes.append(cur.right)
+                roads.append(cur.right.val + val)
+        return False
+```
+
+## 701 二叉搜索树中的插入操作
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点： 二叉搜索树
+二叉搜索树满足如下性质：
+    1. 左子树所有节点的元素值均小于根的元素值；
+    2. 右子树所有节点的元素值均大于根的元素值。
+
+#### 优秀答案
+```python
+class Solution(object):
+    def insertIntoBST(self, root, val):
+        """
+        :type root: TreeNode
+        :type val: int
+        :rtype: TreeNode
+        """
+        if not root:
+            return TreeNode(val)
+        
+        pos = root  # 最后要返回根节点
+        while pos:
+            if val < pos.val:
+                # BST 的左子树值比根值小，右子树值比根值大
+                if not pos.left:
+                    pos.left = TreeNode(val)
+                    break
+                else:
+                    pos = pos.left
+            else:
+                if not pos.right:
+                    pos.right = TreeNode(val)
+                    break
+                else:
+                    pos = pos.right
+        return root
+```
+## 98 验证二叉搜索树
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案: 递归 DFS
+```python
+class Solution(object):
+    def isValidBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        return self.helper(root)
+
+
+    def helper(self, node, lower = float('-inf'), upper = float('inf')):
+        if not node:
+            return True
+        
+        val = node.val
+        if val <= lower or val >= upper:
+            return False
+
+        if not self.helper(node.right, val, upper):
+            return False
+        if not self.helper(node.left, lower, val):
+            return False
+        return True
+```
+#### 优秀答案: 中序遍历 迭代
+如果中序遍历得到的节点的值小于等于前一个 ，说明不是二叉搜索树
+```python
+class Solution:
+    def isValidBST(self, root: TreeNode) -> bool:
+        stack, inorder = [], float('-inf')
+        
+        while stack or root:
+            while root:
+                stack.append(root)
+                root = root.left
+            root = stack.pop()
+            # 如果中序遍历得到的节点的值小于等于前一个 inorder，说明不是二叉搜索树
+            if root.val <= inorder:
+                return False
+            inorder = root.val
+            root = root.right
+        return True
+```
+## 653 两数之和 BST版
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案: 哈希表
+```
+class Solution(object):
+    def __init__(self):
+        self.s = set()  # global变量
+
+    def findTarget(self, root, k):
+        """
+        :type root: TreeNode
+        :type k: int
+        :rtype: bool
+        """
+        if root is None:
+            return False
+        if k - root.val in self.s:
+            return True
+        self.s.add(root.val)
+
+        return self.findTarget(root.left, k) or self.findTarget(root.right, k)
+```
+
+## 235 二叉搜索树最近的公共祖先
+### 1. 题目
+### 2. 考点与优秀答案
+#### 考点
+#### 优秀答案
+```python
+class Solution(object):
+    def lowestCommonAncestor(self, root, p, q):
+        """
+        :type root: TreeNode
+        :type p: TreeNode
+        :type q: TreeNode
+        :rtype: TreeNode
+        """
+        ancestor = root
+        while True:
+            if ancestor.val > p.val and ancestor.val > q.val:
+                ancestor = ancestor.left
+            elif ancestor.val < p.val and ancestor.val < q.val:
+                ancestor = ancestor.right
+            else:
+                return ancestor
+        return None
+```
+
+
+##  
 ### 1. 题目
 ### 2. 考点与优秀答案
 #### 考点
