@@ -76,6 +76,13 @@ git clone 不需要，git pull 和 git fetch 需要。
 git clone下来的项目可以直接推送到远程，git pull 和 git fetch 需要先执行 git remote add 添加远程仓库后才能 push。
 
 
+#### 1.3.4 删除远程仓库
+- 方法一
+   `git remote rm origin`
+
+- 方法二
+   删除项目本地文件夹下的.git 文件夹即可
+
 ### 1.4	分支
 - 新建分支\
     git branch <分支名>
